@@ -1,39 +1,28 @@
-<div id="function-visualization">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Function Shadows with Breakdown</title>
     <style>
-        #function-visualization {
-            font-family: Arial, sans-serif;
-            width: 800px;
-            height: 600px;
-            display: flex;
-            flex-wrap: wrap;
-        }
-        #function-visualization #graph { 
-            width: 400px; 
-            height: 400px; 
-        }
-        #function-visualization #breakdown { 
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: Arial, sans-serif; }
+        #container { width: 800px; height: 600px; display: flex; flex-wrap: wrap; }
+        #graph { width: 400px; height: 400px; }
+        #breakdown { 
             width: 380px; 
             height: 180px; 
             margin-left: 20px; 
             margin-top: 20px; 
             font-size: 14px; 
+            opacity: 0;
+            transform: translateX(50px);
+            transition: opacity 1s, transform 1s;
         }
-        #function-visualization #breakdown h3 { 
-            margin-top: 0; 
-        }
-        #function-visualization #breakdown ul { 
-            padding-left: 20px; 
-            margin-top: 5px; 
-        }
-        #function-visualization .step { 
-            opacity: 0; 
-            transition: opacity 0.3s; 
-        }
-        #function-visualization .highlight { 
-            font-weight: bold; 
-            color: #0000FF; 
-        }
+        #breakdown h3 { margin-top: 0; }
+        #breakdown ul { padding-left: 20px; margin-top: 5px; }
     </style>
+</head>
+<body>
     <div id="container">
         <div id="graph">
             <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
@@ -93,20 +82,20 @@
         <div id="breakdown">
             <h3>Function Breakdown: f(x) = √(x² - 4)</h3>
             <ul>
-                <li id="step1" class="step">Step 1: Consider <span class="highlight">x² - 4</span>
+                <li>Step 1: Consider x² - 4
                     <ul>
                         <li>This is undefined when x² - 4 < 0</li>
                         <li>Solve: x² < 4</li>
                         <li>Result: -2 < x < 2</li>
                     </ul>
                 </li>
-                <li id="step2" class="step">Step 2: Domain
+                <li>Step 2: Domain
                     <ul>
                         <li>x ≤ -2 or x ≥ 2</li>
                         <li>In interval notation: (-∞, -2] ∪ [2, ∞)</li>
                     </ul>
                 </li>
-                <li id="step3" class="step">Step 3: Range
+                <li>Step 3: Range
                     <ul>
                         <li>y = √(x² - 4) ≥ 0 for all valid x</li>
                         <li>In interval notation: [0, ∞)</li>
@@ -115,58 +104,50 @@
             </ul>
         </div>
     </div>
+
     <script>
-        (function() {
-            function animateShadows() {
-                const leftDomain = document.getElementById('leftDomain');
-                const rightDomain = document.getElementById('rightDomain');
-                const rangeShadow = document.getElementById('rangeShadow');
-                
-                let t = 0;
-                const animationDuration = 2000;
+        function animateShadows() {
+            const leftDomain = document.getElementById('leftDomain');
+            const rightDomain = document.getElementById('rightDomain');
+            const rangeShadow = document.getElementById('rangeShadow');
+            
+            let t = 0;
+            const animationDuration = 2000;
 
-                function animate() {
-                    t += 16;
-                    const progress = Math.min(t / animationDuration, 1);
-                    
-                    leftDomain.setAttribute('x2', 50 + 75 * progress);
-                    rightDomain.setAttribute('x1', 350 - 75 * progress);
-                    
-                    rangeShadow.setAttribute('y1', 200 - 150 * progress);
-                    
-                    if (progress < 1) {
-                        requestAnimationFrame(animate);
-                    } else {
-                        setTimeout(() => {
-                            t = 0;
-                            animate();
-                        }, 1000);
-                    }
+            function animate() {
+                t += 16;
+                const progress = Math.min(t / animationDuration, 1);
+                
+                leftDomain.setAttribute('x2', 50 + 75 * progress);
+                rightDomain.setAttribute('x1', 350 - 75 * progress);
+                
+                rangeShadow.setAttribute('y1', 200 - 150 * progress);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    setTimeout(() => {
+                        t = 0;
+                        animate();
+                    }, 1000);
                 }
-
-                animate();
             }
 
-            function animateBreakdown() {
-                const steps = ['step1', 'step2', 'step3'];
-                
-                function showStep(index) {
-                    if (index < steps.length) {
-                        document.getElementById(steps[index]).style.opacity = '1';
-                        setTimeout(() => showStep(index + 1), 1000);
-                    }
-                }
-                
-                setTimeout(() => showStep(0), 500);
-            }
+            animate();
+        }
 
-            function init() {
-                animateShadows();
-                animateBreakdown();
-            }
+        function animateBreakdown() {
+            const breakdown = document.getElementById('breakdown');
+            setTimeout(() => {
+                breakdown.style.opacity = '1';
+                breakdown.style.transform = 'translateX(0)';
+            }, 500);
+        }
 
-            // Run init when the script is loaded
-            init();
-        })();
+        window.onload = function() {
+            animateShadows();
+            animateBreakdown();
+        };
     </script>
-</div>
+</body>
+</html>
