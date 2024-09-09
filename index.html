@@ -1,153 +1,487 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Function Shadows with Breakdown</title>
-    <style>
-        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: Arial, sans-serif; }
-        #container { width: 800px; height: 600px; display: flex; flex-wrap: wrap; }
-        #graph { width: 400px; height: 400px; }
-        #breakdown { 
-            width: 380px; 
-            height: 180px; 
-            margin-left: 20px; 
-            margin-top: 20px; 
-            font-size: 14px; 
-            opacity: 0;
-            transform: translateX(50px);
-            transition: opacity 1s, transform 1s;
-        }
-        #breakdown h3 { margin-top: 0; }
-        #breakdown ul { padding-left: 20px; margin-top: 5px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Function Graphs with Smooth Transformations</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #333;
+    }
+    #container {
+      background-color: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      max-width: 1000px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-weight: 500;
+      color: #555;
+    }
+    .sliderContainer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .sliderLabel {
+      width: 60%;
+      font-size: 1rem;
+      color: #555;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      background: #ddd;
+      outline: none;
+      opacity: 0.9;
+      transition: opacity 0.2s;
+      border-radius: 5px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #4CAF50;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: #4CAF50;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+    .sliderValue {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #333;
+    }
+    label {
+      font-weight: 500;
+      margin-right: 10px;
+    }
+    input[type="checkbox"] {
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    #graphContainer {
+      margin: 30px 0;
+    }
+    .infoContainer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    #info {
+      flex: 1;
+    }
+    .checkboxContainer {
+      margin-bottom: 20px;
+    }
+  </style>
 </head>
 <body>
-    <div id="container">
-        <div id="graph">
-            <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-                <line x1="50" y1="200" x2="350" y2="200" stroke="black" stroke-width="2"/>
-                <line x1="200" y1="50" x2="200" y2="350" stroke="black" stroke-width="2"/>
-                
-                <text x="360" y="205" font-size="14">x</text>
-                <text x="190" y="40" font-size="14">y</text>
-                
-                <g stroke="lightgray" stroke-width="0.5">
-                    <line x1="50" y1="125" x2="350" y2="125"/>
-                    <line x1="50" y1="275" x2="350" y2="275"/>
-                    <line x1="125" y1="50" x2="125" y2="350"/>
-                    <line x1="275" y1="50" x2="275" y2="350"/>
-                </g>
-                
-                <path d="M 50 125 Q 125 200 200 200" fill="none" stroke="blue" stroke-width="2"/>
-                <path d="M 200 200 Q 275 200 350 125" fill="none" stroke="blue" stroke-width="2"/>
-                
-                <line id="leftDomain" x1="50" y1="210" x2="50" y2="210" stroke="rgba(255,0,0,0.5)" stroke-width="10"/>
-                <line id="rightDomain" x1="350" y1="210" x2="350" y2="210" stroke="rgba(255,0,0,0.5)" stroke-width="10"/>
-                <text x="60" y="230" font-size="12" fill="red">x ≤ -2</text>
-                <text x="285" y="230" font-size="12" fill="red">x ≥ 2</text>
-                
-                <line id="rangeShadow" x1="190" y1="200" x2="190" y2="200" stroke="rgba(0,255,0,0.5)" stroke-width="10"/>
-                <text x="160" y="125" font-size="12" fill="green" transform="rotate(-90 160,125)">y ≥ 0</text>
-                
-                <text x="220" y="80" font-size="16" fill="blue">f(x) = √(x² - 4)</text>
-                
-                <circle cx="125" cy="200" r="3" fill="purple"/>
-                <text x="105" y="220" font-size="12">(-2, 0)</text>
-                
-                <circle cx="275" cy="200" r="3" fill="purple"/>
-                <text x="285" y="220" font-size="12">(2, 0)</text>
-                
-                <circle cx="325" cy="150" r="3" fill="purple"/>
-                <text x="330" y="145" font-size="12">(3, √5)</text>
-                <line x1="325" y1="150" x2="325" y2="200" stroke="purple" stroke-dasharray="2,2"/>
-                <line x1="325" y1="150" x2="200" y2="150" stroke="purple" stroke-dasharray="2,2"/>
-                
-                <text x="260" y="190" font-size="12">Input (x)</text>
-                <text x="205" y="70" font-size="12" transform="rotate(-90 205,70)">Output (y)</text>
-                
-                <line x1="125" y1="50" x2="125" y2="350" stroke="orange" stroke-width="1" stroke-dasharray="5,5"/>
-                <line x1="275" y1="50" x2="275" y2="350" stroke="orange" stroke-width="1" stroke-dasharray="5,5"/>
-                <text x="95" y="180" font-size="12" fill="orange" transform="rotate(-90 95,180)">x = -2</text>
-                <text x="305" y="180" font-size="12" fill="orange" transform="rotate(-90 305,180)">x = 2</text>
 
-                <rect x="10" y="325" width="140" height="65" fill="white" stroke="black" stroke-width="1"/>
-                <text x="15" y="340" font-size="10" font-weight="bold">Legend:</text>
-                <text x="15" y="355" font-size="10" fill="red">Red: Domain (Input)</text>
-                <text x="15" y="370" font-size="10" fill="green">Green: Range (Output)</text>
-                <line x1="15" y1="380" x2="55" y2="380" stroke="orange" stroke-width="1" stroke-dasharray="5,5"/>
-                <text x="60" y="385" font-size="10" fill="orange">Asymptotes</text>
-            </svg>
-        </div>
-        <div id="breakdown">
-            <h3>Function Breakdown: f(x) = √(x² - 4)</h3>
-            <ul>
-                <li>Step 1: Consider x² - 4
-                    <ul>
-                        <li>This is undefined when x² - 4 < 0</li>
-                        <li>Solve: x² < 4</li>
-                        <li>Result: -2 < x < 2</li>
-                    </ul>
-                </li>
-                <li>Step 2: Domain
-                    <ul>
-                        <li>x ≤ -2 or x ≥ 2</li>
-                        <li>In interval notation: (-∞, -2] ∪ [2, ∞)</li>
-                    </ul>
-                </li>
-                <li>Step 3: Range
-                    <ul>
-                        <li>y = √(x² - 4) ≥ 0 for all valid x</li>
-                        <li>In interval notation: [0, ∞)</li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
+<div id="container">
+  <h1>Enhanced Function Graphs with Smooth Transformations</h1>
+
+  <div class="sliderContainer">
+    <label class="sliderLabel" for="functionSelector">Select a Function:</label>
+    <select id="functionSelector">
+      <option value="square">Square Function (y = m(x - h)² + k)</option>
+      <option value="sqrt">Square Root Function (y = m√(x - h) + k)</option>
+      <option value="abs">Absolute Function (y = m|x - h| + k)</option>
+      <option value="exp">Exponential Function (y = me^(x - h) + k)</option>
+      <option value="log">Logarithmic Function (y = m log(x - h) + k)</option>
+      <option value="reciprocal">Reciprocal Function (y = m/(x - h) + k)</option>
+      <option value="sin">Sine Function (y = m * sin(x - h) + k)</option>
+      <option value="cos">Cosine Function (y = m * cos(x - h) + k)</option>
+      <option value="tan">Tangent Function (y = m * tan(x - h) + k)</option>
+      <option value="cubic">Cubic Function (y = m(x - h)^3 + k)</option>
+      <option value="quartic">Quartic Function (y = m(x - h)^4 + k)</option>
+    </select>
+  </div>
+
+  <div class="sliderContainer">
+    <label class="sliderLabel">Main Function Scaling (m):</label>
+    <input type="range" id="mainFunctionSlider" min="0.1" max="5" step="0.1" value="1">
+    <span class="sliderValue" id="mainFunctionValue">1</span>
+  </div>
+
+  <div class="sliderContainer">
+    <label class="sliderLabel">
+      <input type="checkbox" id="aCheckbox"> Enable Vertical Stretch/Compression (a):
+    </label>
+    <input type="range" id="aSlider" min="-100" max="100" step="1" value="1" disabled>
+    <span class="sliderValue" id="aValue">1</span>
+  </div>
+
+  <div class="sliderContainer">
+    <label class="sliderLabel">
+      <input type="checkbox" id="hCheckbox"> Enable Horizontal Shift (h):
+    </label>
+    <input type="range" id="hSlider" min="-100" max="100" step="1" value="0" disabled>
+    <span class="sliderValue" id="hValue">0</span>
+  </div>
+
+  <div class="sliderContainer">
+    <label class="sliderLabel">
+      <input type="checkbox" id="kCheckbox"> Enable Vertical Shift (k):
+    </label>
+    <input type="range" id="kSlider" min="-100" max="100" step="1" value="0" disabled>
+    <span class="sliderValue" id="kValue">0</span>
+  </div>
+
+  <div class="checkboxContainer">
+    <label>
+      <input type="checkbox" id="reflectCheckbox"> Enable Reflection (flip over x-axis)
+    </label>
+  </div>
+
+  <div id="graphContainer">
+    <div id="graph"></div>
+  </div>
+
+  <div id="info">
+    <div class="infoContainer">
+      <p id="formula">Formula: </p>
+      <p id="domain">Domain: </p>
+      <p id="range">Range: </p>
     </div>
+    <p id="features">Special Features: </p>
+  </div>
+</div>
 
-    <script>
-        function animateShadows() {
-            const leftDomain = document.getElementById('leftDomain');
-            const rightDomain = document.getElementById('rightDomain');
-            const rangeShadow = document.getElementById('rangeShadow');
-            
-            let t = 0;
-            const animationDuration = 2000;
+<script>
+  const functionSelector = document.getElementById('functionSelector');
+  const mainFunctionSlider = document.getElementById('mainFunctionSlider');
+  const aSlider = document.getElementById('aSlider');
+  const hSlider = document.getElementById('hSlider');
+  const kSlider = document.getElementById('kSlider');
+  const aCheckbox = document.getElementById('aCheckbox');
+  const hCheckbox = document.getElementById('hCheckbox');
+  const kCheckbox = document.getElementById('kCheckbox');
+  const reflectCheckbox = document.getElementById('reflectCheckbox');
 
-            function animate() {
-                t += 16;
-                const progress = Math.min(t / animationDuration, 1);
-                
-                leftDomain.setAttribute('x2', 50 + 75 * progress);
-                rightDomain.setAttribute('x1', 350 - 75 * progress);
-                
-                rangeShadow.setAttribute('y1', 200 - 150 * progress);
-                
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                } else {
-                    setTimeout(() => {
-                        t = 0;
-                        animate();
-                    }, 1000);
-                }
-            }
+  const mainFunctionValueDisplay = document.getElementById('mainFunctionValue');
+  const aValueDisplay = document.getElementById('aValue');
+  const hValueDisplay = document.getElementById('hValue');
+  const kValueDisplay = document.getElementById('kValue');
 
-            animate();
+  const formulaDisplay = document.getElementById('formula');
+  const domainDisplay = document.getElementById('domain');
+  const rangeDisplay = document.getElementById('range');
+  const featuresDisplay = document.getElementById('features');
+
+  const trigFunctions = {
+    sin: {
+      formula: "y = m * sin(x - h) + k",
+      plotData: (m, h, k) => {
+        const x = [];
+        const y = [];
+        for (let i = -10; i <= 10; i += 0.1) {
+          x.push(i);
+          y.push(m * Math.sin(i - h) + k);
         }
-
-        function animateBreakdown() {
-            const breakdown = document.getElementById('breakdown');
-            setTimeout(() => {
-                breakdown.style.opacity = '1';
-                breakdown.style.transform = 'translateX(0)';
-            }, 500);
+        return { x, y };
+      }
+    },
+    cos: {
+      formula: "y = m * cos(x - h) + k",
+      plotData: (m, h, k) => {
+        const x = [];
+        const y = [];
+        for (let i = -10; i <= 10; i += 0.1) {
+          x.push(i);
+          y.push(m * Math.cos(i - h) + k);
         }
+        return { x, y };
+      }
+    },
+    tan: {
+      formula: "y = m * tan(x - h) + k",
+      plotData: (m, h, k) => {
+        const x = [];
+        const y = [];
+        for (let i = -10; i <= 10; i += 0.1) {
+          x.push(i);
+          y.push(m * Math.tan(i - h) + k);
+        }
+        return { x, y };
+      }
+    }
+  };
 
-        window.onload = function() {
-            animateShadows();
-            animateBreakdown();
-        };
-    </script>
+  const polynomialFunctions = {
+    cubic: {
+      formula: "y = m(x - h)^3 + k",
+      plotData: (m, h, k) => {
+        const x = [];
+        const y = [];
+        for (let i = -10; i <= 10; i += 0.1) {
+          x.push(i);
+          y.push(m * Math.pow(i - h, 3) + k);
+        }
+        return { x, y };
+      }
+    },
+    quartic: {
+      formula: "y = m(x - h)^4 + k",
+      plotData: (m, h, k) => {
+        const x = [];
+        const y = [];
+        for (let i = -10; i <= 10; i += 0.1) {
+          x.push(i);
+          y.push(m * Math.pow(i - h, 4) + k);
+        }
+        return { x, y };
+      }
+    }
+  };
+
+  // Function data for different functions
+  const functionData = {
+    ...trigFunctions,
+    ...polynomialFunctions,
+    square: {
+      formula: "y = m(x - h)² + k",
+      domain: "(-∞, ∞)",
+      range: "Depends on m and k",
+      features: "Symmetric about y-axis, vertex at (h, k)",
+      plotData: (m, h, k) => {
+        const x = [];
+        const y = [];
+        for (let i = -10; i <= 10; i += 0.1) {
+          x.push(i);
+          y.push(m * Math.pow(i - h, 2) + k);
+        }
+        return { x, y };
+      }
+    },
+    sqrt: {
+      formula: "y = m√(x - h) + k",
+      domain: "[h, ∞)",
+      range: "[k, ∞)",
+      features: "Starts at (h, k), no negative x-values",
+      plotData: (m, h, k) => {
+        const x = [];
+        const y = [];
+        for (let i = h; i <= 10; i += 0.1) {
+          x.push(i);
+          y.push(m * Math.sqrt(i - h) + k);
+        }
+        return { x, y };
+      }
+    },
+    abs: {
+      formula: "y = m|x - h| + k",
+      domain: "(-∞, ∞)",
+      range: "[k, ∞)",
+      features: "V-shaped, vertex at (h, k)",
+      plotData: (m, h, k) => {
+        const x = [];
+        const y = [];
+        for (let i = -10; i <= 10; i += 0.1) {
+          x.push(i);
+          y.push(m * Math.abs(i - h) + k);
+        }
+        return { x, y };
+      }
+    },
+    exp: {
+      formula: "y = me^(x - h) + k",
+      domain: "(-∞, ∞)",
+      range: "(k, ∞)",
+      features: "Rapid growth, approaches y = k",
+      plotData: (m, h, k) => {
+        const x = [];
+        const y = [];
+        for (let i = -5; i <= 5; i += 0.1) {
+          x.push(i);
+          y.push(m * Math.exp(i - h) + k);
+        }
+        return { x, y };
+      }
+    },
+    log: {
+      formula: "y = m log(x - h) + k",
+      domain: "(h, ∞)",
+      range: "(-∞, ∞)",
+      features: "Vertical asymptote at x=h",
+      plotData: (m, h, k) => {
+        const x = [];
+        const y = [];
+        for (let i = h + 0.1; i <= 10; i += 0.1) {
+          x.push(i);
+          y.push(m * Math.log(i - h) + k);
+        }
+        return { x, y };
+      }
+    },
+    reciprocal: {
+      formula: "y = m/(x - h) + k",
+      domain: "(-∞, h) ∪ (h, ∞)",
+      range: "(-∞, k) ∪ (k, ∞)",
+      features: "Hyperbola, asymptotes at x = h and y = k",
+      plotData: (m, h, k) => {
+        const x = [];
+        const y = [];
+        for (let i = -10; i <= 10; i += 0.1) {
+          if (i !== h) {
+            x.push(i);
+            y.push(m / (i - h) + k);
+          }
+        }
+        return { x, y };
+      }
+    }
+  };
+
+  // Function to plot the graph with transformations
+  function plotGraph() {
+    const selectedFunction = functionSelector.value;
+    let a = parseFloat(aSlider.value);
+    let m = parseFloat(mainFunctionSlider.value);
+    const h = parseFloat(hSlider.value);
+    const k = parseFloat(kSlider.value);
+
+    // Apply reflection if checkbox is checked
+    if (reflectCheckbox.checked) {
+      a = -a;
+      m = -m;
+    }
+
+    // Update the displayed values for the sliders
+    mainFunctionValueDisplay.textContent = m;
+    aValueDisplay.textContent = a;
+    hValueDisplay.textContent = h;
+    kValueDisplay.textContent = k;
+
+    const traces = [];
+
+    // Main function trace with independent scaling
+    const mainFunction = functionData[selectedFunction].plotData(m, 0, 0);
+    traces.push({
+      x: mainFunction.x,
+      y: mainFunction.y,
+      mode: 'lines',
+      line: { color: 'blue' },
+      name: 'Main Function Scaling'
+    });
+
+    // Add vertical stretch/compression if enabled, affected by main scaling `m`
+    if (aCheckbox.checked) {
+      const aTransformed = functionData[selectedFunction].plotData(m * a, 0, 0);
+      traces.push({
+        x: aTransformed.x,
+        y: aTransformed.y,
+        mode: 'lines',
+        line: { color: 'red' },
+        name: 'Vertical Stretch/Compression'
+      });
+    }
+
+    // Add horizontal shift if enabled, affected by main scaling `m`
+    if (hCheckbox.checked) {
+      const hTransformed = functionData[selectedFunction].plotData(m, h, 0);
+      traces.push({
+        x: hTransformed.x,
+        y: hTransformed.y,
+        mode: 'lines',
+        line: { color: 'green' },
+        name: 'Horizontal Shift'
+      });
+    }
+
+    // Add vertical shift if enabled, affected by main scaling `m`
+    if (kCheckbox.checked) {
+      const kTransformed = functionData[selectedFunction].plotData(m, 0, k);
+      traces.push({
+        x: kTransformed.x,
+        y: kTransformed.y,
+        mode: 'lines',
+        line: { color: 'purple' },
+        name: 'Vertical Shift'
+      });
+    }
+
+    // Plot the graph using Plotly with smooth animation
+    Plotly.newPlot('graph', traces, {
+      transition: {
+        duration: 500,
+        easing: 'cubic-in-out'
+      }
+    });
+
+    // Update the formula, domain, and range information
+    formulaDisplay.textContent = `Formula: ${functionData[selectedFunction].formula.replace('m', m).replace('h', h).replace('k', k)}`;
+    domainDisplay.textContent = `Domain: ${functionData[selectedFunction].domain}`;
+    rangeDisplay.textContent = `Range: ${functionData[selectedFunction].range}`;
+    featuresDisplay.textContent = `Special Features: ${functionData[selectedFunction].features}`;
+  }
+
+  // Enable/disable sliders based on checkbox states
+  function toggleSliders() {
+    aSlider.disabled = !aCheckbox.checked;
+    hSlider.disabled = !hCheckbox.checked;
+    kSlider.disabled = !kCheckbox.checked;
+  }
+
+  // Initialize the graph on page load
+  function initializeGraph() {
+    const selectedFunction = functionSelector.value;
+    const data = functionData[selectedFunction].plotData(1, 0, 0);
+
+    Plotly.newPlot('graph', [{
+      x: data.x,
+      y: data.y,
+      mode: 'lines',
+      line: { color: 'blue' },
+      name: 'Main Function'
+    }], {
+      margin: { t: 0 }
+    });
+  }
+
+  // Initialize the graph on page load
+  initializeGraph();
+
+  // Update the graph when the function is changed or sliders are moved
+  functionSelector.addEventListener('change', plotGraph);
+  mainFunctionSlider.addEventListener('input', plotGraph);
+  aSlider.addEventListener('input', plotGraph);
+  hSlider.addEventListener('input', plotGraph);
+  kSlider.addEventListener('input', plotGraph);
+  reflectCheckbox.addEventListener('change', plotGraph);
+
+  // Enable or disable sliders based on checkbox state
+  aCheckbox.addEventListener('change', toggleSliders);
+  hCheckbox.addEventListener('change', toggleSliders);
+  kCheckbox.addEventListener('change', toggleSliders);
+
+  // Plot the graph when checkboxes are changed
+  aCheckbox.addEventListener('change', plotGraph);
+  hCheckbox.addEventListener('change', plotGraph);
+  kCheckbox.addEventListener('change', plotGraph);
+
+</script>
+
 </body>
 </html>
