@@ -2,485 +2,1290 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enhanced Function Graphs with Smooth Transformations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Interactive Function Grapher</title>
+  
+  <!-- Import Plotly.js library -->
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  
+  <!-- Import Math.js library for parsing custom functions -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.6.4/math.min.js"></script>
+  
+  <!-- Import MathJax for rendering LaTeX -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+  <!-- Google Fonts for Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  
   <style>
+    /* Styling */
+    :root {
+      --primary-color: #0071e3;
+      --secondary-color: #34c759;
+      --accent-color: #ff9500;
+      --background-color: #f5f5f7;
+      --text-color: #1d1d1f;
+      --border-color: #d2d2d7;
+      
+      /* Dark mode colors */
+      --dark-background-color: #1e1e1e;
+      --dark-text-color: #ffffff;
+      --dark-border-color: #3c3c3c;
+      --dark-input-bg: #333333;
+      --dark-input-text: #ffffff;
+      --error-bg: #ffcccc;
+      --error-text: #ff0000;
+    }
+    
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f6f9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: var(--background-color);
       margin: 0;
       padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      color: #333;
+      color: var(--text-color);
+      line-height: 1.6;
+      transition: background-color 0.3s, color 0.3s;
     }
+    
+    /* Dark Mode Styles */
+    body.dark-mode {
+      background-color: var(--dark-background-color);
+      color: var(--dark-text-color);
+    }
+    
+    body.dark-mode input,
+    body.dark-mode select,
+    body.dark-mode label {
+      background-color: var(--dark-input-bg);
+      color: var(--dark-input-text);
+      border-color: var(--dark-border-color);
+    }
+    
     #container {
-      background-color: white;
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      max-width: 1000px;
-      width: 100%;
+      max-width: 1200px;
+      margin: auto;
+      padding: 40px 20px;
     }
+    
     h1 {
       text-align: center;
       margin-bottom: 40px;
-      font-weight: 500;
-      color: #555;
+      font-size: 2.5em;
+      font-weight: 700;
+      color: var(--primary-color);
     }
-    .sliderContainer {
+    
+    .control-group {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       margin-bottom: 20px;
+      background-color: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: background-color 0.3s;
     }
-    .sliderLabel {
-      width: 60%;
-      font-size: 1rem;
-      color: #555;
+    
+    body.dark-mode .control-group {
+      background-color: #2c2c2c;
+      box-shadow: 0 2px 10px rgba(255,255,255,0.1);
     }
-    input[type="range"] {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 8px;
-      background: #ddd;
-      outline: none;
-      opacity: 0.9;
-      transition: opacity 0.2s;
-      border-radius: 5px;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 16px;
-      height: 16px;
-      background: #4CAF50;
-      cursor: pointer;
-      border-radius: 50%;
-    }
-    input[type="range"]::-moz-range-thumb {
-      width: 16px;
-      height: 16px;
-      background: #4CAF50;
-      cursor: pointer;
-      border-radius: 50%;
-    }
-    .sliderValue {
-      font-size: 1rem;
-      font-weight: 500;
-      color: #333;
-    }
-    label {
-      font-weight: 500;
-      margin-right: 10px;
-    }
-    input[type="checkbox"] {
-      margin-right: 10px;
-      cursor: pointer;
-    }
-    #graphContainer {
-      margin: 30px 0;
-    }
-    .infoContainer {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-    }
-    #info {
+    
+    .control-group label {
       flex: 1;
+      font-weight: 600;
+      font-size: 1em;
+      color: inherit; /* Ensures label inherits text color */
     }
-    .checkboxContainer {
-      margin-bottom: 20px;
+    
+    .control-group input[type="range"],
+    .control-group input[type="number"],
+    .control-group select,
+    .control-group input[type="text"] {
+      flex: 2;
+      margin-right: 10px;
+      padding: 10px;
+      font-size: 1em;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: #fff;
+      color: var(--text-color);
+      transition: all 0.3s ease;
+    }
+    
+    body.dark-mode .control-group input,
+    body.dark-mode .control-group select {
+      background-color: var(--dark-input-bg);
+      color: var(--dark-input-text);
+      border-color: var(--dark-border-color);
+    }
+    
+    .control-group input:focus,
+    .control-group select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0,113,227,0.2);
+    }
+    
+    .control-group input[type="number"] {
+      max-width: 150px;
+    }
+    
+    #graph {
+      margin-top: 40px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      resize: both;
+      overflow: hidden;
+      min-width: 300px;
+      min-height: 300px;
+      max-width: 900px;
+      max-height: 900px;
+      transition: background-color 0.3s;
+      width: 100%;
+      height: 500px;
+    }
+    
+    body.dark-mode #graph {
+      background-color: #2c2c2c;
+    }
+    
+    #info, #valueInfo, #inverseInfo {
+      margin-top: 40px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      transition: background-color 0.3s;
+    }
+    
+    body.dark-mode #info,
+    body.dark-mode #valueInfo,
+    body.dark-mode #inverseInfo {
+      background-color: #2c2c2c;
+      box-shadow: 0 4px 20px rgba(255,255,255,0.1);
+    }
+    
+    #info p, #valueInfo p, #inverseInfo p {
+      margin: 10px 0;
+      font-size: 1.1em;
+      color: inherit; /* Ensures text inherits color */
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .checkbox-group input {
+      margin-right: 10px;
+      width: 20px;
+      height: 20px;
+    }
+    
+    .transformation-checkboxes {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 25px;
+      background-color: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: background-color 0.3s;
+    }
+    
+    body.dark-mode .transformation-checkboxes {
+      background-color: #2c2c2c;
+      box-shadow: 0 2px 10px rgba(255,255,255,0.1);
+    }
+    
+    .transformation-checkboxes label {
+      font-size: 0.9em;
+      display: flex;
+      align-items: center;
+      color: inherit; /* Ensures label inherits text color */
+    }
+    
+    .transformation-checkboxes input {
+      margin-right: 8px;
+      width: 18px;
+      height: 18px;
+    }
+    
+    #errorMessage {
+      color: var(--error-text);
+      font-weight: bold;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: var(--error-bg);
+      border-radius: 5px;
+      display: none;
+    }
+    
+    body.dark-mode #errorMessage {
+      background-color: #4d0000;
+      color: #ffcccc;
+    }
+    
+    #toggleDarkMode {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s;
+    }
+    
+    #toggleDarkMode:hover {
+      background-color: #005bb5;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2em;
+      }
+      .control-group {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .control-group label,
+      .control-group input,
+      .control-group select {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      .transformation-checkboxes {
+        grid-template-columns: 1fr;
+      }
+      #toggleDarkMode {
+        top: 10px;
+        right: 10px;
+        padding: 8px 16px;
+      }
+      #graph {
+        height: 400px;
+      }
+    }
+    
+    /* Add Annotation Button Styles */
+    #addAnnotationModeBtn {
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s;
+      margin-left: 10px;
+    }
+    
+    #addAnnotationModeBtn.active {
+      background-color: #228B22; /* ForestGreen */
+    }
+    
+    #addAnnotationModeBtn:hover {
+      background-color: #006400;
+    }
+
+    /* Slider Styles */
+    .slider-group {
+      display: flex;
+      align-items: center;
+      flex: 2;
+      margin-right: 10px;
+    }
+
+    .slider-group input[type="range"] {
+      flex: 1;
+      margin-right: 10px;
+    }
+
+    .slider-value {
+      width: 50px;
+      text-align: center;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
 
 <div id="container">
-  <h1>Function Graphs with Transformations . Babken E. </h1>
+  <h1>Interactive Function Grapher</h1>
 
-  <div class="sliderContainer">
-    <label class="sliderLabel" for="functionSelector">Select a Function:</label>
+  <!-- Dark Mode Toggle Button -->
+  <button id="toggleDarkMode">Toggle Dark Mode</button>
+
+  <!-- Function Selection -->
+  <div class="control-group">
+    <label for="functionSelector">Select a Function:</label>
     <select id="functionSelector">
-      <option value="square">Square Function (y = m(x - h)² + k)</option>
-      <option value="sqrt">Square Root Function (y = m√(x - h) + k)</option>
-      <option value="abs">Absolute Function (y = m|x - h| + k)</option>
-      <option value="exp">Exponential Function (y = me^(x - h) + k)</option>
-      <option value="log">Logarithmic Function (y = m log(x - h) + k)</option>
-      <option value="reciprocal">Reciprocal Function (y = m/(x - h) + k)</option>
-      <option value="sin">Sine Function (y = m * sin(x - h) + k)</option>
-      <option value="cos">Cosine Function (y = m * cos(x - h) + k)</option>
-      <option value="tan">Tangent Function (y = m * tan(x - h) + k)</option>
-      <option value="cubic">Cubic Function (y = m(x - h)^3 + k)</option>
-      <option value="quartic">Quartic Function (y = m(x - h)^4 + k)</option>
+      <option value="custom">Custom Function</option>
+      <option value="square">Square Function (y = a(x - h)² + k)</option>
+      <option value="sqrt">Square Root Function (y = a√(x - h) + k)</option>
+      <option value="abs">Absolute Value Function (y = a|x - h| + k)</option>
+      <option value="exp">Exponential Function (y = a e^(b(x - h) + c) + k)</option>
+      <option value="log">Logarithmic Function (y = a ln(b(x - h)) + k)</option>
+      <option value="reciprocal">Reciprocal Function (y = a / (b(x - h)) + k)</option>
+      <option value="sin">Sine Function (y = a sin(b(x - h) + c) + k)</option>
+      <option value="cos">Cosine Function (y = a cos(b(x - h) + c) + k)</option>
+      <option value="tan">Tangent Function (y = a tan(b(x - h) + c) + k)</option>
+      <option value="cubic">Cubic Function (y = a(x - h)³ + k)</option>
+      <option value="quartic">Quartic Function (y = a(x - h)⁴ + k)</option>
+      <option value="piecewise">Piecewise Function</option>
     </select>
   </div>
 
-  <div class="sliderContainer">
-    <label class="sliderLabel">Main Function Scaling (m):</label>
-    <input type="range" id="mainFunctionSlider" min="0.1" max="5" step="0.1" value="1">
-    <span class="sliderValue" id="mainFunctionValue">1</span>
+  <!-- Enter an x-value -->
+  <div class="control-group">
+    <label for="xValueInput">Enter an x-value:</label>
+    <input type="number" id="xValueInput" step="0.1" value="0">
   </div>
 
-  <div class="sliderContainer">
-    <label class="sliderLabel">
-      <input type="checkbox" id="aCheckbox"> Enable Vertical Stretch/Compression (a):
-    </label>
-    <input type="range" id="aSlider" min="-100" max="100" step="1" value="1" disabled>
-    <span class="sliderValue" id="aValue">1</span>
+  <!-- Custom Function Input -->
+  <div class="control-group" id="customFunctionGroup" style="display: none;">
+    <label for="customFunction">Enter Custom Function (in terms of x):</label>
+    <input type="text" id="customFunction" placeholder="e.g., sin(x) + x^2">
   </div>
 
-  <div class="sliderContainer">
-    <label class="sliderLabel">
-      <input type="checkbox" id="hCheckbox"> Enable Horizontal Shift (h):
-    </label>
-    <input type="range" id="hSlider" min="-100" max="100" step="1" value="0" disabled>
-    <span class="sliderValue" id="hValue">0</span>
-  </div>
-
-  <div class="sliderContainer">
-    <label class="sliderLabel">
-      <input type="checkbox" id="kCheckbox"> Enable Vertical Shift (k):
-    </label>
-    <input type="range" id="kSlider" min="-100" max="100" step="1" value="0" disabled>
-    <span class="sliderValue" id="kValue">0</span>
-  </div>
-
-  <div class="checkboxContainer">
-    <label>
-      <input type="checkbox" id="reflectCheckbox"> Enable Reflection (flip over x-axis)
-    </label>
-  </div>
-
-  <div id="graphContainer">
-    <div id="graph"></div>
-  </div>
-
-  <div id="info">
-    <div class="infoContainer">
-      <p id="formula">Formula: </p>
-      <p id="domain">Domain: </p>
-      <p id="range">Range: </p>
+  <!-- Piecewise Function Inputs -->
+  <div class="control-group" id="piecewiseFunctionGroup" style="display: none;">
+    <label>Define Piecewise Segments:</label>
+    <div id="piecewiseSegments" style="width: 100%;">
+      <!-- Dynamic Piecewise Segments will be added here -->
     </div>
-    <p id="features">Special Features: </p>
+    <button id="addSegmentBtn">Add Segment</button>
   </div>
+
+  <!-- Parameters Input -->
+  <div class="control-group">
+    <label for="aInput">Vertical Stretch/Compression (a):</label>
+    <input type="number" id="aInput" step="0.1" value="1">
+  </div>
+
+  <!-- Frequency (b) Slider -->
+  <div class="control-group">
+    <label for="bInput">Frequency (b):</label>
+    <div class="slider-group">
+      <input type="range" id="bInput" min="0.1" max="10" step="0.1" value="1">
+      <span class="slider-value" id="bValue">1.0</span>
+    </div>
+  </div>
+
+  <!-- Phase Shift (c) Slider -->
+  <div class="control-group">
+    <label for="cInput">Phase Shift (c):</label>
+    <div class="slider-group">
+      <input type="range" id="cInput" min="-10" max="10" step="0.1" value="0">
+      <span class="slider-value" id="cValue">0.0</span>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label for="hInput">Horizontal Shift (h):</label>
+    <input type="number" id="hInput" step="0.1" value="0">
+  </div>
+
+  <div class="control-group">
+    <label for="kInput">Vertical Shift (k):</label>
+    <input type="number" id="kInput" step="0.1" value="0">
+  </div>
+
+  <div class="checkbox-group">
+    <input type="checkbox" id="reflectCheckbox">
+    <label for="reflectCheckbox">Reflect over the x-axis</label>
+  </div>
+
+  <!-- Transformation Checkboxes in 2x3 Grid -->
+  <div class="transformation-checkboxes">
+    <label><input type="checkbox" id="showBase" checked> Show Base Function</label>
+    <label><input type="checkbox" id="showA" checked> Show Vertical Stretch/Compression</label>
+    <label><input type="checkbox" id="showH" checked> Show Horizontal Shift</label>
+    <label><input type="checkbox" id="showK" checked> Show Vertical Shift</label>
+    <label><input type="checkbox" id="showTransformed" checked> Show Fully Transformed Function</label>
+    <label><input type="checkbox" id="showInverse"> Show Inverse Function</label>
+  </div>
+
+  <!-- Add Note Section -->
+  <div class="control-group">
+    <label>Add Note:</label>
+    <input type="number" id="xNote" placeholder="X-coordinate" style="width: 100px;">
+    <input type="number" id="yNote" placeholder="Y-coordinate" style="width: 100px;">
+    <input type="text" id="noteText" placeholder="Note text" style="flex: 3;">
+    <button id="addNoteBtn">Add Note</button>
+    <button id="addAnnotationModeBtn">Click to Add Annotation</button>
+  </div>
+
+  <!-- Error Message -->
+  <div id="errorMessage"></div>
+
+  <!-- Graph Container -->
+  <div id="graph"></div>
+
+  <!-- Information Section -->
+  <div id="info">
+    <p id="formula"><strong>Formula:</strong> </p>
+    <p id="domain"><strong>Domain:</strong> </p>
+    <p id="range"><strong>Range:</strong> </p>
+    <p id="features"><strong>Special Features:</strong> </p>
+  </div>
+
+  <!-- Function Values Section -->
+  <div id="valueInfo">
+    <h2>Function Values at x = <span id="xValueDisplay">0</span></h2>
+    <p><strong>Base Function y:</strong> <span id="yBaseDisplay"></span></p>
+    <p><strong>After Vertical Stretch/Compression (a):</strong> <span id="yADisplay"></span></p>
+    <p><strong>After Frequency Adjustment (b):</strong> <span id="yBDisplay"></span></p>
+    <p><strong>After Phase Shift (c):</strong> <span id="yCDisplay"></span></p>
+    <p><strong>After Horizontal Shift (h):</strong> <span id="yHDisplay"></span></p>
+    <p><strong>After Vertical Shift (k):</strong> <span id="yKDisplay"></span></p>
+    <p><strong>Fully Transformed Function y:</strong> <span id="yTransformedDisplay"></span></p>
+  </div>
+
+  <!-- Inverse Function Information -->
+  <div id="inverseInfo" style="display: none;">
+    <h2>Inverse Function Values</h2>
+    <p><strong>y (Input for Inverse):</strong> <span id="yTransformedDisplayInverse"></span></p>
+    <p><strong>Inverse Function y:</strong> <span id="yInverseDisplay"></span></p>
+    <p id="inverseDomainNote" style="color: var(--error-text); font-weight: bold;"></p>
+  </div>
+
 </div>
 
 <script>
+  // DOM Elements
   const functionSelector = document.getElementById('functionSelector');
-  const mainFunctionSlider = document.getElementById('mainFunctionSlider');
-  const aSlider = document.getElementById('aSlider');
-  const hSlider = document.getElementById('hSlider');
-  const kSlider = document.getElementById('kSlider');
-  const aCheckbox = document.getElementById('aCheckbox');
-  const hCheckbox = document.getElementById('hCheckbox');
-  const kCheckbox = document.getElementById('kCheckbox');
+  const customFunctionGroup = document.getElementById('customFunctionGroup');
+  const piecewiseFunctionGroup = document.getElementById('piecewiseFunctionGroup');
+  const customFunctionInput = document.getElementById('customFunction');
+  const addSegmentBtn = document.getElementById('addSegmentBtn');
+  const piecewiseSegments = document.getElementById('piecewiseSegments');
+
+  const xValueInput = document.getElementById('xValueInput');
+  const xValueDisplay = document.getElementById('xValueDisplay');
+  const yBaseDisplay = document.getElementById('yBaseDisplay');
+  const yADisplay = document.getElementById('yADisplay');
+  const yBDisplay = document.getElementById('yBDisplay');
+  const yCDisplay = document.getElementById('yCDisplay');
+  const yHDisplay = document.getElementById('yHDisplay');
+  const yKDisplay = document.getElementById('yKDisplay');
+  const yTransformedDisplay = document.getElementById('yTransformedDisplay');
+
+  const aInput = document.getElementById('aInput');
+  const bInput = document.getElementById('bInput');
+  const cInput = document.getElementById('cInput');
+  const hInput = document.getElementById('hInput');
+  const kInput = document.getElementById('kInput');
   const reflectCheckbox = document.getElementById('reflectCheckbox');
 
-  const mainFunctionValueDisplay = document.getElementById('mainFunctionValue');
-  const aValueDisplay = document.getElementById('aValue');
-  const hValueDisplay = document.getElementById('hValue');
-  const kValueDisplay = document.getElementById('kValue');
+  const showBaseCheckbox = document.getElementById('showBase');
+  const showACheckbox = document.getElementById('showA');
+  const showHCheckbox = document.getElementById('showH');
+  const showKCheckbox = document.getElementById('showK');
+  const showTransformedCheckbox = document.getElementById('showTransformed');
+  const showInverseCheckbox = document.getElementById('showInverse');
+
+  const inverseInfoDiv = document.getElementById('inverseInfo');
+  const yTransformedDisplayInverse = document.getElementById('yTransformedDisplayInverse');
+  const yInverseDisplay = document.getElementById('yInverseDisplay');
+  const inverseDomainNote = document.getElementById('inverseDomainNote');
 
   const formulaDisplay = document.getElementById('formula');
   const domainDisplay = document.getElementById('domain');
   const rangeDisplay = document.getElementById('range');
   const featuresDisplay = document.getElementById('features');
 
-  const trigFunctions = {
-    sin: {
-      formula: "y = m * sin(x - h) + k",
-      plotData: (m, h, k) => {
-        const x = [];
-        const y = [];
-        for (let i = -10; i <= 10; i += 0.1) {
-          x.push(i);
-          y.push(m * Math.sin(i - h) + k);
-        }
-        return { x, y };
-      }
-    },
-    cos: {
-      formula: "y = m * cos(x - h) + k",
-      plotData: (m, h, k) => {
-        const x = [];
-        const y = [];
-        for (let i = -10; i <= 10; i += 0.1) {
-          x.push(i);
-          y.push(m * Math.cos(i - h) + k);
-        }
-        return { x, y };
-      }
-    },
-    tan: {
-      formula: "y = m * tan(x - h) + k",
-      plotData: (m, h, k) => {
-        const x = [];
-        const y = [];
-        for (let i = -10; i <= 10; i += 0.1) {
-          x.push(i);
-          y.push(m * Math.tan(i - h) + k);
-        }
-        return { x, y };
-      }
-    }
-  };
+  const addNoteBtn = document.getElementById('addNoteBtn');
+  const xNoteInput = document.getElementById('xNote');
+  const yNoteInput = document.getElementById('yNote');
+  const noteTextInput = document.getElementById('noteText');
 
-  const polynomialFunctions = {
-    cubic: {
-      formula: "y = m(x - h)^3 + k",
-      plotData: (m, h, k) => {
-        const x = [];
-        const y = [];
-        for (let i = -10; i <= 10; i += 0.1) {
-          x.push(i);
-          y.push(m * Math.pow(i - h, 3) + k);
-        }
-        return { x, y };
-      }
-    },
-    quartic: {
-      formula: "y = m(x - h)^4 + k",
-      plotData: (m, h, k) => {
-        const x = [];
-        const y = [];
-        for (let i = -10; i <= 10; i += 0.1) {
-          x.push(i);
-          y.push(m * Math.pow(i - h, 4) + k);
-        }
-        return { x, y };
-      }
-    }
-  };
+  const toggleDarkModeBtn = document.getElementById('toggleDarkMode');
+  const errorMessageDiv = document.getElementById('errorMessage');
+  const addAnnotationModeBtn = document.getElementById('addAnnotationModeBtn');
 
-  // Function data for different functions
-  const functionData = {
-    ...trigFunctions,
-    ...polynomialFunctions,
+  const graphContainer = document.getElementById('graph');
+
+  // Initialize Annotations Array
+  let annotations = [];
+
+  // Initialize Annotation Mode
+  let annotationMode = false;
+
+  // Initialize Function Definitions
+  const functions = {
     square: {
-      formula: "y = m(x - h)² + k",
-      domain: "(-∞, ∞)",
-      range: "Depends on m and k",
-      features: "Symmetric about y-axis, vertex at (h, k)",
-      plotData: (m, h, k) => {
-        const x = [];
-        const y = [];
-        for (let i = -10; i <= 10; i += 0.1) {
-          x.push(i);
-          y.push(m * Math.pow(i - h, 2) + k);
-        }
-        return { x, y };
-      }
+      name: "Square Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}(x ${h >= 0 ? '-' : '+'} ${Math.abs(h)})² ${k >= 0 ? '+' : '-'} ${Math.abs(k)}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x) => Math.pow(x, 2),
+      hasInverse: false,
+      getInverse: null,
+      domain: "All real numbers",
+      range: "y ≥ 0"
     },
     sqrt: {
-      formula: "y = m√(x - h) + k",
-      domain: "[h, ∞)",
-      range: "[k, ∞)",
-      features: "Starts at (h, k), no negative x-values",
-      plotData: (m, h, k) => {
-        const x = [];
-        const y = [];
-        for (let i = h; i <= 10; i += 0.1) {
-          x.push(i);
-          y.push(m * Math.sqrt(i - h) + k);
-        }
-        return { x, y };
-      }
+      name: "Square Root Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}√(x ${h >= 0 ? '-' : '+'} ${Math.abs(h)}) ${k >= 0 ? '+' : '-'} ${Math.abs(k)}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x) => Math.sqrt(x),
+      hasInverse: true,
+      getInverse: (x, a, h, k, reflect, b, c) => {
+        if (a === 0 || reflect === 0) return NaN;
+        if (x < k) return NaN; // Domain restriction
+        let y = Math.pow((x - k) / a, 2) + h;
+        return reflect === -1 ? -y : y;
+      },
+      domain: "x ≥ h",
+      range: "y ≥ k"
     },
     abs: {
-      formula: "y = m|x - h| + k",
-      domain: "(-∞, ∞)",
-      range: "[k, ∞)",
-      features: "V-shaped, vertex at (h, k)",
-      plotData: (m, h, k) => {
-        const x = [];
-        const y = [];
-        for (let i = -10; i <= 10; i += 0.1) {
-          x.push(i);
-          y.push(m * Math.abs(i - h) + k);
-        }
-        return { x, y };
-      }
+      name: "Absolute Value Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}|x ${h >= 0 ? '-' : '+'} ${Math.abs(h)}| ${k >= 0 ? '+' : '-'} ${Math.abs(k)}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x) => Math.abs(x),
+      hasInverse: false,
+      getInverse: null,
+      domain: "All real numbers",
+      range: "y ≥ 0"
     },
     exp: {
-      formula: "y = me^(x - h) + k",
-      domain: "(-∞, ∞)",
-      range: "(k, ∞)",
-      features: "Rapid growth, approaches y = k",
-      plotData: (m, h, k) => {
-        const x = [];
-        const y = [];
-        for (let i = -5; i <= 5; i += 0.1) {
-          x.push(i);
-          y.push(m * Math.exp(i - h) + k);
-        }
-        return { x, y };
-      }
+      name: "Exponential Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}e^(${b}*(x ${h >= 0 ? '-' : '+'} ${Math.abs(h)}) + ${c}) ${k >= 0 ? '+' : '-'} ${Math.abs(k)}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x, b, c) => Math.exp(b * x + c),
+      hasInverse: true,
+      getInverse: (x, a, h, k, reflect, b, c) => {
+        if (a === 0 || reflect === 0 || b === 0) return NaN;
+        if (x <= k) return NaN; // Domain restriction
+        let y = (Math.log((x - k) / a) - c) / b + h;
+        return reflect === -1 ? -y : y;
+      },
+      domain: "x > h",
+      range: "y > k"
     },
     log: {
-      formula: "y = m log(x - h) + k",
-      domain: "(h, ∞)",
-      range: "(-∞, ∞)",
-      features: "Vertical asymptote at x=h",
-      plotData: (m, h, k) => {
-        const x = [];
-        const y = [];
-        for (let i = h + 0.1; i <= 10; i += 0.1) {
-          x.push(i);
-          y.push(m * Math.log(i - h) + k);
-        }
-        return { x, y };
-      }
+      name: "Logarithmic Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}ln(${b}*(x ${h >= 0 ? '-' : '+'} ${Math.abs(h)})) + ${c} ${k >= 0 ? '+' : '-'} ${Math.abs(k)}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x, b, c) => Math.log(b * x) + c,
+      hasInverse: true,
+      getInverse: (x, a, h, k, reflect, b, c) => {
+        if (a === 0 || reflect === 0 || b === 0) return NaN;
+        if (x <= k) return NaN; // Domain restriction
+        let y = (Math.exp((x - c) / a) / b) + h;
+        return reflect === -1 ? -y : y;
+      },
+      domain: "x > h",
+      range: "y > k"
     },
     reciprocal: {
-      formula: "y = m/(x - h) + k",
-      domain: "(-∞, h) ∪ (h, ∞)",
-      range: "(-∞, k) ∪ (k, ∞)",
-      features: "Hyperbola, asymptotes at x = h and y = k",
-      plotData: (m, h, k) => {
-        const x = [];
-        const y = [];
-        for (let i = -10; i <= 10; i += 0.1) {
-          if (i !== h) {
-            x.push(i);
-            y.push(m / (i - h) + k);
-          }
+      name: "Reciprocal Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}/(${b}*(x ${h >= 0 ? '-' : '+'} ${Math.abs(h)})) + ${c} ${k >= 0 ? '+' : '-'} ${Math.abs(k)}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x, b, c) => 1 / (b * x + c), // Corrected base function
+      hasInverse: true,
+      getInverse: (x, a, h, k, reflect, b, c) => {
+        if (a === 0 || reflect === 0 || b === 0) return NaN;
+        if (x === k) return NaN; // Avoid division by zero
+        let y = (a / (x - c)) / b + h;
+        return reflect === -1 ? -y : y;
+      },
+      domain: "x ≠ h + (-c/b)",
+      range: "y ≠ k"
+    },
+    sin: {
+      name: "Sine Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}sin(${b}*(x ${h >= 0 ? '-' : '+'} ${Math.abs(h)}) + ${c}) + ${k}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x, b, c) => Math.sin(b * x + c),
+      hasInverse: false,
+      getInverse: null,
+      domain: "All real numbers",
+      range: "y ∈ [-a + k, a + k]"
+    },
+    cos: {
+      name: "Cosine Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}cos(${b}*(x ${h >= 0 ? '-' : '+'} ${Math.abs(h)}) + ${c}) + ${k}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x, b, c) => Math.cos(b * x + c),
+      hasInverse: false,
+      getInverse: null,
+      domain: "All real numbers",
+      range: "y ∈ [-a + k, a + k]"
+    },
+    tan: {
+      name: "Tangent Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}tan(${b}*(x ${h >= 0 ? '-' : '+'} ${Math.abs(h)}) + ${c}) + ${k}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x, b, c) => Math.tan(b * x + c),
+      hasInverse: false,
+      getInverse: null,
+      domain: "x ≠ h + nπ/(2b), where n is an integer",
+      range: "y ∈ ℝ"
+    },
+    cubic: {
+      name: "Cubic Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}(x ${h >= 0 ? '-' : '+'} ${Math.abs(h)})³ + ${k}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x) => Math.pow(x, 3),
+      hasInverse: true,
+      getInverse: (x, a, h, k, reflect, b, c) => {
+        if (a === 0 || reflect === 0) return NaN;
+        let y = Math.cbrt((x - k) / a) + h;
+        return reflect === -1 ? -y : y;
+      },
+      domain: "All real numbers",
+      range: "All real numbers"
+    },
+    quartic: {
+      name: "Quartic Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}(x ${h >= 0 ? '-' : '+'} ${Math.abs(h)})⁴ + ${k}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x) => Math.pow(x, 4),
+      hasInverse: false,
+      getInverse: null,
+      domain: "All real numbers",
+      range: "y ≥ k"
+    },
+    piecewise: {
+      name: "Piecewise Function",
+      formula: (segments) => {
+        let formula = "y = {";
+        segments.forEach((segment, index) => {
+          formula += ` ${segment.condition} : ${segment.expression}`;
+          if (index < segments.length - 1) formula += ",";
+        });
+        formula += " }";
+        return formula;
+      },
+      base: null, // Handled separately
+      hasInverse: false,
+      getInverse: null,
+      domain: "Depends on the segments",
+      range: "Depends on the segments"
+    },
+    custom: {
+      name: "Custom Function",
+      formula: (a, h, k, reflect, b, c) => `y = ${a !== 1 ? a : ''}${customFunctionInput.value} ${h !== 0 ? ` (Shifted by h=${h})` : ''} ${k !== 0 ? ` (Shifted by k=${k})` : ''}${reflect === -1 ? ' (Reflected)' : ''}`,
+      base: (x) => {
+        try {
+          return math.evaluate(customFunctionInput.value, {x: x});
+        } catch {
+          return NaN;
         }
-        return { x, y };
-      }
+      },
+      hasInverse: false,
+      getInverse: null,
+      domain: "Depends on the custom function",
+      range: "Depends on the custom function"
     }
   };
 
-  // Function to plot the graph with transformations
-  function plotGraph() {
+  // Event Listener for Function Selection
+  functionSelector.addEventListener('change', () => {
     const selectedFunction = functionSelector.value;
-    let a = parseFloat(aSlider.value);
-    let m = parseFloat(mainFunctionSlider.value);
-    const h = parseFloat(hSlider.value);
-    const k = parseFloat(kSlider.value);
+    if (selectedFunction === 'custom') {
+      customFunctionGroup.style.display = 'flex';
+      piecewiseFunctionGroup.style.display = 'none';
+    } else if (selectedFunction === 'piecewise') {
+      customFunctionGroup.style.display = 'none';
+      piecewiseFunctionGroup.style.display = 'flex';
+      if (piecewiseSegments.childElementCount === 0) {
+        addPiecewiseSegment(); // Add initial segment
+      }
+    } else {
+      customFunctionGroup.style.display = 'none';
+      piecewiseFunctionGroup.style.display = 'none';
+    }
+    updateGraph();
+  });
 
-    // Apply reflection if checkbox is checked
-    if (reflectCheckbox.checked) {
-      a = -a;
-      m = -m;
+  // Function to Add Piecewise Segment
+  function addPiecewiseSegment() {
+    const segmentDiv = document.createElement('div');
+    segmentDiv.classList.add('piecewise-segment');
+    segmentDiv.style.display = 'flex';
+    segmentDiv.style.width = '100%';
+    
+    segmentDiv.innerHTML = `
+      <input type="text" class="segmentCondition" placeholder="Condition (e.g., x < 0)" style="flex: 1; margin-right: 10px;">
+      <input type="text" class="segmentExpression" placeholder="Expression (e.g., x²)" style="flex: 2; margin-right: 10px;">
+      <button class="removeSegmentBtn">Remove</button>
+    `;
+    
+    // Event Listener for Remove Button
+    segmentDiv.querySelector('.removeSegmentBtn').addEventListener('click', () => {
+      piecewiseSegments.removeChild(segmentDiv);
+      updateGraph();
+    });
+    
+    // Event Listeners for Inputs
+    segmentDiv.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', updateGraph);
+    });
+    
+    piecewiseSegments.appendChild(segmentDiv);
+  }
+
+  // Event Listener for Add Segment Button
+  addSegmentBtn.addEventListener('click', addPiecewiseSegment);
+
+  // Event Listener for Function Parameters (a, b, c, h, k)
+  [aInput, bInput, cInput, hInput, kInput, reflectCheckbox].forEach(element => {
+    element.addEventListener('input', updateGraph);
+  });
+
+  // Transformation Checkboxes Event Listeners
+  [showBaseCheckbox, showACheckbox, showHCheckbox, showKCheckbox, showTransformedCheckbox, showInverseCheckbox].forEach(checkbox => {
+    checkbox.addEventListener('change', updateGraph);
+  });
+
+  // Dark Mode Toggle
+  toggleDarkModeBtn.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+  });
+
+  // Update Slider Values Display
+  const bValueDisplay = document.getElementById('bValue');
+  const cValueDisplay = document.getElementById('cValue');
+
+  bInput.addEventListener('input', () => {
+    bValueDisplay.textContent = parseFloat(bInput.value).toFixed(1);
+    updateGraph();
+  });
+
+  cInput.addEventListener('input', () => {
+    cValueDisplay.textContent = parseFloat(cInput.value).toFixed(1);
+    updateGraph();
+  });
+
+  // Add Note Functionality
+  addNoteBtn.addEventListener('click', () => {
+    const x = parseFloat(xNoteInput.value);
+    const y = parseFloat(yNoteInput.value);
+    const text = noteTextInput.value.trim();
+
+    if (isNaN(x) || isNaN(y) || text === "") {
+      displayError("Please enter valid x, y coordinates and note text.");
+      return;
     }
 
-    // Update the displayed values for the sliders
-    mainFunctionValueDisplay.textContent = m;
-    aValueDisplay.textContent = a;
-    hValueDisplay.textContent = h;
-    kValueDisplay.textContent = k;
+    // Create a new annotation
+    const newAnnotation = {
+      x: x,
+      y: y,
+      xref: 'x',
+      yref: 'y',
+      text: text,
+      showarrow: true,
+      arrowhead: 7,
+      ax: 0,
+      ay: -40,
+      font: {color: 'black'}
+    };
+
+    // Add to annotations array
+    annotations.push(newAnnotation);
+
+    // Update Plotly annotations
+    Plotly.relayout('graph', { annotations: annotations });
+
+    // Clear input fields
+    xNoteInput.value = '';
+    yNoteInput.value = '';
+    noteTextInput.value = '';
+    hideError();
+  });
+
+  // Add Annotation by Clicking on the Graph
+  addAnnotationModeBtn.addEventListener('click', () => {
+    annotationMode = !annotationMode;
+    addAnnotationModeBtn.classList.toggle('active');
+    addAnnotationModeBtn.textContent = annotationMode ? 'Click on Graph to Add Annotation' : 'Click to Add Annotation';
+    if (annotationMode) {
+      displayInfo("Annotation mode activated. Click on the graph to add a note.");
+    } else {
+      hideInfo();
+    }
+  });
+
+  // Function to Display Error Messages
+  function displayError(message) {
+    errorMessageDiv.textContent = message;
+    errorMessageDiv.style.display = 'block';
+    errorMessageDiv.style.backgroundColor = 'var(--error-bg)';
+    errorMessageDiv.style.color = 'var(--error-text)';
+  }
+
+  // Function to Hide Error Messages
+  function hideError() {
+    errorMessageDiv.style.display = 'none';
+    errorMessageDiv.style.backgroundColor = 'var(--error-bg)';
+    errorMessageDiv.style.color = 'var(--error-text)';
+  }
+
+  // Function to Display Informational Messages
+  function displayInfo(message) {
+    errorMessageDiv.textContent = message;
+    errorMessageDiv.style.backgroundColor = '#d9edf7'; // Light blue
+    errorMessageDiv.style.color = '#31708f';
+    errorMessageDiv.style.display = 'block';
+  }
+
+  // Function to Hide Informational Messages
+  function hideInfo() {
+    errorMessageDiv.style.display = 'none';
+    errorMessageDiv.style.backgroundColor = 'var(--error-bg)';
+    errorMessageDiv.style.color = 'var(--error-text)';
+  }
+
+  // Function to Render the Graph
+  function updateGraph() {
+    const selectedFunction = functionSelector.value;
+    const x = parseFloat(xValueInput.value);
+    const a = parseFloat(aInput.value);
+    const b = parseFloat(bInput.value);
+    const c = parseFloat(cInput.value);
+    const h = parseFloat(hInput.value);
+    const k = parseFloat(kInput.value);
+    const reflect = reflectCheckbox.checked ? -1 : 1;
+
+    let func = functions[selectedFunction];
+    if (selectedFunction === 'custom') {
+      func = functions['custom'];
+    }
+
+    // Update Formula Display with MathJax
+    if (selectedFunction === 'piecewise') {
+      const segments = Array.from(piecewiseSegments.querySelectorAll('.piecewise-segment')).map(seg => {
+        return {
+          condition: seg.querySelector('.segmentCondition').value,
+          expression: seg.querySelector('.segmentExpression').value
+        };
+      });
+      formulaDisplay.innerHTML = `<strong>Formula:</strong> $$${func.formula(segments)}$$`;
+    } else {
+      formulaDisplay.innerHTML = `<strong>Formula:</strong> $$${func.formula(a, h, k, reflect, b, c)}$$`;
+    }
+    MathJax.typesetPromise();
+
+    // Calculate Function Values
+    let baseY = NaN;
+    let transformedY = NaN;
+    try {
+      if (selectedFunction === 'piecewise') {
+        baseY = evaluatePiecewise(x);
+      } else if (selectedFunction === 'custom') {
+        baseY = func.base(x - h);
+      } else {
+        baseY = func.base(x - h, b, c);
+      }
+      transformedY = reflect * (a * baseY + k);
+    } catch (error) {
+      baseY = NaN;
+      transformedY = NaN;
+    }
+
+    if (isNaN(baseY) || !isFinite(baseY)) {
+      yBaseDisplay.textContent = 'Undefined';
+      yADisplay.textContent = 'Undefined';
+      yBDisplay.textContent = 'Undefined';
+      yCDisplay.textContent = 'Undefined';
+      yHDisplay.textContent = 'Undefined';
+      yKDisplay.textContent = 'Undefined';
+      yTransformedDisplay.textContent = 'Undefined';
+    } else {
+      yBaseDisplay.textContent = baseY.toFixed(4);
+      yADisplay.textContent = (a * baseY).toFixed(4);
+      yBDisplay.textContent = (b).toFixed(4);
+      yCDisplay.textContent = (c).toFixed(4);
+      yHDisplay.textContent = baseY.toFixed(4); // Horizontal shift affects x, not y
+      yKDisplay.textContent = (baseY + k).toFixed(4);
+      yTransformedDisplay.textContent = transformedY.toFixed(4);
+    }
+
+    xValueDisplay.textContent = isNaN(x) || !isFinite(x) ? 'Undefined' : x.toFixed(4);
+
+    // Generate Data for Plotting
+    const xValues = [];
+    const yTransformedValues = [];
+    const yBaseValues = [];
+    const yAValues = [];
+    const yHValues = [];
+    const yKValues = [];
+    const inverseXValues = [];
+    const inverseYValues = [];
+
+    const step = 0.1;
+    const rangeMin = -100;
+    const rangeMax = 100;
+
+    for (let xi = rangeMin; xi <= rangeMax; xi += step) {
+      let yBaseCurrent = NaN;
+      try {
+        if (selectedFunction === 'piecewise') {
+          yBaseCurrent = evaluatePiecewise(xi);
+        } else if (selectedFunction === 'custom') {
+          yBaseCurrent = func.base(xi - h);
+        } else {
+          yBaseCurrent = func.base(xi - h, b, c);
+        }
+      } catch {
+        yBaseCurrent = NaN;
+      }
+
+      let yA = a * yBaseCurrent;
+      let yH = yBaseCurrent; // Horizontal shift already applied
+      let yK = yBaseCurrent + k;
+      let yTransformed = reflect * (a * yBaseCurrent + k);
+
+      xValues.push(xi);
+      yBaseValues.push(yBaseCurrent);
+      yAValues.push(yA);
+      yHValues.push(yH);
+      yKValues.push(yK);
+      yTransformedValues.push(yTransformed);
+    }
 
     const traces = [];
 
-    // Main function trace with independent scaling
-    const mainFunction = functionData[selectedFunction].plotData(m, 0, 0);
-    traces.push({
-      x: mainFunction.x,
-      y: mainFunction.y,
-      mode: 'lines',
-      line: { color: 'blue' },
-      name: 'Main Function Scaling'
-    });
-
-    // Add vertical stretch/compression if enabled, affected by main scaling `m`
-    if (aCheckbox.checked) {
-      const aTransformed = functionData[selectedFunction].plotData(m * a, 0, 0);
+    // Base Function Trace
+    if (showBaseCheckbox.checked && selectedFunction !== 'piecewise') {
       traces.push({
-        x: aTransformed.x,
-        y: aTransformed.y,
+        x: xValues,
+        y: yBaseValues,
         mode: 'lines',
-        line: { color: 'red' },
-        name: 'Vertical Stretch/Compression'
+        name: 'Base Function',
+        line: {color: 'gray', dash: 'dash'}
       });
     }
 
-    // Add horizontal shift if enabled, affected by main scaling `m`
-    if (hCheckbox.checked) {
-      const hTransformed = functionData[selectedFunction].plotData(m, h, 0);
+    // Vertical Stretch/Compression Trace
+    if (showACheckbox.checked && a !== 1) {
       traces.push({
-        x: hTransformed.x,
-        y: hTransformed.y,
+        x: xValues,
+        y: yAValues,
         mode: 'lines',
-        line: { color: 'green' },
-        name: 'Horizontal Shift'
+        name: 'Vertical Stretch/Compression',
+        line: {color: 'green'}
       });
     }
 
-    // Add vertical shift if enabled, affected by main scaling `m`
-    if (kCheckbox.checked) {
-      const kTransformed = functionData[selectedFunction].plotData(m, 0, k);
-      traces.push({
-        x: kTransformed.x,
-        y: kTransformed.y,
-        mode: 'lines',
-        line: { color: 'purple' },
-        name: 'Vertical Shift'
-      });
-    }
-
-    // Plot the graph using Plotly with smooth animation
-    Plotly.newPlot('graph', traces, {
-      transition: {
-        duration: 500,
-        easing: 'cubic-in-out'
+    // Frequency Adjustment Trace (for trigonometric functions)
+    if (selectedFunction === 'sin' || selectedFunction === 'cos' || selectedFunction === 'tan') {
+      if (showACheckbox.checked && b !== 1) {
+        traces.push({
+          x: xValues,
+          y: yAValues.map(y => a * y),
+          mode: 'lines',
+          name: 'Frequency Adjustment',
+          line: {color: 'teal'}
+        });
       }
-    });
+    }
 
-    // Update the formula, domain, and range information
-    formulaDisplay.textContent = `Formula: ${functionData[selectedFunction].formula.replace('m', m).replace('h', h).replace('k', k)}`;
-    domainDisplay.textContent = `Domain: ${functionData[selectedFunction].domain}`;
-    rangeDisplay.textContent = `Range: ${functionData[selectedFunction].range}`;
-    featuresDisplay.textContent = `Special Features: ${functionData[selectedFunction].features}`;
-  }
+    // Phase Shift Trace (for trigonometric functions)
+    if (selectedFunction === 'sin' || selectedFunction === 'cos' || selectedFunction === 'tan') {
+      if (c !== 0) {
+        traces.push({
+          x: xValues,
+          y: yBaseValues.map(y => y),
+          mode: 'lines',
+          name: 'Phase Shift',
+          line: {color: 'brown'}
+        });
+      }
+    }
 
-  // Enable/disable sliders based on checkbox states
-  function toggleSliders() {
-    aSlider.disabled = !aCheckbox.checked;
-    hSlider.disabled = !hCheckbox.checked;
-    kSlider.disabled = !kCheckbox.checked;
-  }
+    // Horizontal Shift Trace
+    if (showHCheckbox.checked && h !== 0) {
+      traces.push({
+        x: xValues,
+        y: yHValues,
+        mode: 'lines',
+        name: 'Horizontal Shift',
+        line: {color: 'orange'}
+      });
+    }
 
-  // Initialize the graph on page load
-  function initializeGraph() {
-    const selectedFunction = functionSelector.value;
-    const data = functionData[selectedFunction].plotData(1, 0, 0);
+    // Vertical Shift Trace
+    if (showKCheckbox.checked && k !== 0) {
+      traces.push({
+        x: xValues,
+        y: yKValues,
+        mode: 'lines',
+        name: 'Vertical Shift',
+        line: {color: 'purple'}
+      });
+    }
 
-    Plotly.newPlot('graph', [{
-      x: data.x,
-      y: data.y,
+    // Fully Transformed Function Trace (Distinct Color)
+    if (showTransformedCheckbox.checked) {
+      const transformedColor = '#FF5733'; // Distinct color (e.g., Orange-Red)
+      traces.push({
+        x: xValues,
+        y: yTransformedValues,
+        mode: 'lines',
+        name: 'Fully Transformed Function',
+        line: {color: transformedColor, width: 2}
+      });
+    }
+
+    // Plot Inverse Function if enabled
+    if (showInverseCheckbox.checked && func.hasInverse && typeof func.getInverse === 'function') {
+      for (let xi = rangeMin; xi <= rangeMax; xi += step) {
+        let yInverse = func.getInverse(xi, a, h, k, reflect, b, c);
+        if (!isNaN(yInverse) && isFinite(yInverse)) {
+          // Ensure yInverse is within plotting range
+          if (yInverse >= rangeMin && yInverse <= rangeMax) {
+            inverseXValues.push(xi);
+            inverseYValues.push(yInverse);
+          }
+        }
+      }
+      if (inverseXValues.length > 0) {
+        traces.push({
+          x: inverseXValues,
+          y: inverseYValues,
+          mode: 'lines',
+          name: 'Inverse Function',
+          line: {color: 'red'}
+        });
+      }
+    }
+
+    // Optional: Plot y = x line for reference
+    traces.push({
+      x: [rangeMin, rangeMax],
+      y: [rangeMin, rangeMax],
       mode: 'lines',
-      line: { color: 'blue' },
-      name: 'Main Function'
-    }], {
-      margin: { t: 0 }
+      name: 'y = x',
+      line: {color: 'black', dash: 'dot'}
     });
+
+    // Marker for Input Point on Transformed Function
+    if (!isNaN(transformedY) && isFinite(transformedY)) {
+      traces.push({
+        x: [x],
+        y: [transformedY],
+        mode: 'markers',
+        name: 'Input Point',
+        marker: {color: 'black', size: 10, symbol: 'circle'}
+      });
+    }
+
+    // Marker for Inverse Function Point
+    if (showInverseCheckbox.checked && func.hasInverse && typeof func.getInverse === 'function' && !isNaN(transformedY) && isFinite(transformedY)) {
+      let inverseY = func.getInverse(transformedY, a, h, k, reflect, b, c);
+      if (!isNaN(inverseY) && isFinite(inverseY)) {
+        // Ensure inverseY is within plotting range
+        if (inverseY >= rangeMin && inverseY <= rangeMax) {
+          traces.push({
+            x: [transformedY],
+            y: [inverseY],
+            mode: 'markers',
+            name: 'Inverse Point',
+            marker: {color: 'orange', size: 10, symbol: 'circle'}
+          });
+        }
+      }
+    }
+
+    // Add Annotations
+    // Convert annotations array to Plotly's annotation format
+    const plotlyAnnotations = annotations.map(a => ({
+      x: a.x,
+      y: a.y,
+      xref: a.xref,
+      yref: a.yref,
+      text: a.text,
+      showarrow: a.showarrow,
+      arrowhead: a.arrowhead,
+      ax: a.ax,
+      ay: a.ay,
+      font: a.font
+    }));
+
+    // Define Layout
+    const layout = {
+      title: `${func.name}`,
+      xaxis: {range: [-10, 10], title: 'x'},
+      yaxis: {range: [-10, 10], title: 'y'},
+      showlegend: true,
+      annotations: plotlyAnnotations,
+      dragmode: 'pan',
+      autosize: true,
+      margin: { l: 50, r: 50, b: 50, t: 50 },
+      responsive: true
+    };
+
+    // Plot the Graph using Plotly.react to preserve annotations
+    Plotly.react('graph', traces, layout, {responsive: true});
+
+    // Update Inverse Function Information
+    if (showInverseCheckbox.checked && func.hasInverse && typeof func.getInverse === 'function') {
+      const yTransformed = transformedY;
+      let inverseY = func.getInverse(yTransformed, a, h, k, reflect, b, c);
+
+      if (selectedFunction === 'square' || selectedFunction === 'abs' || selectedFunction === 'quartic') {
+        // These functions have no inverse or multiple inverses
+        yInverseDisplay.textContent = 'Inverse not defined for this function.';
+      } else {
+        if (!isNaN(inverseY) && isFinite(inverseY)) {
+          yInverseDisplay.textContent = `y = ${inverseY.toFixed(4)}`;
+        } else {
+          yInverseDisplay.textContent = 'No valid inverse for the given y-value.';
+        }
+      }
+
+      yTransformedDisplayInverse.textContent = isNaN(yTransformed) || !isFinite(yTransformed) ? 'Undefined' : yTransformed.toFixed(4);
+
+      // Handle Domain Restrictions
+      let domainNote = '';
+      if (func.domain) {
+        domainNote += `Domain of function: ${func.domain}. `;
+      }
+      if (func.range) {
+        domainNote += `Range of function: ${func.range}. `;
+      }
+      if (func.hasInverse && func.range) {
+        domainNote += `Domain of inverse: ${func.range}.`;
+      }
+      inverseDomainNote.textContent = domainNote;
+      inverseInfoDiv.style.display = 'block';
+    } else {
+      inverseInfoDiv.style.display = 'none';
+    }
+
+    // Update Domain and Range Information
+    if (selectedFunction === 'piecewise') {
+      domainDisplay.textContent = `Domain: Depends on the segments`;
+      rangeDisplay.textContent = `Range: Depends on the segments`;
+    } else {
+      domainDisplay.textContent = `Domain: ${func.domain || 'All real numbers'}`;
+      rangeDisplay.textContent = `Range: ${func.range || 'All real numbers'}`;
+    }
+    featuresDisplay.textContent = `Special Features: ${func.hasInverse ? 'Has Inverse' : 'No Inverse'}`;
   }
 
-  // Initialize the graph on page load
-  initializeGraph();
+  // Function to Evaluate Piecewise Function
+  function evaluatePiecewise(x) {
+    const segments = Array.from(piecewiseSegments.querySelectorAll('.piecewise-segment')).map(seg => {
+      return {
+        condition: seg.querySelector('.segmentCondition').value,
+        expression: seg.querySelector('.segmentExpression').value
+      };
+    });
 
-  // Update the graph when the function is changed or sliders are moved
-  functionSelector.addEventListener('change', plotGraph);
-  mainFunctionSlider.addEventListener('input', plotGraph);
-  aSlider.addEventListener('input', plotGraph);
-  hSlider.addEventListener('input', plotGraph);
-  kSlider.addEventListener('input', plotGraph);
-  reflectCheckbox.addEventListener('change', plotGraph);
+    for (let segment of segments) {
+      let condition = segment.condition;
+      let expression = segment.expression;
 
-  // Enable or disable sliders based on checkbox state
-  aCheckbox.addEventListener('change', toggleSliders);
-  hCheckbox.addEventListener('change', toggleSliders);
-  kCheckbox.addEventListener('change', toggleSliders);
+      // Replace 'x' with actual value and evaluate condition
+      let conditionEval = false;
+      try {
+        conditionEval = math.evaluate(condition, {x: x});
+      } catch {
+        conditionEval = false;
+      }
 
-  // Plot the graph when checkboxes are changed
-  aCheckbox.addEventListener('change', plotGraph);
-  hCheckbox.addEventListener('change', plotGraph);
-  kCheckbox.addEventListener('change', plotGraph);
+      if (conditionEval) {
+        try {
+          return math.evaluate(expression, {x: x});
+        } catch {
+          return NaN;
+        }
+      }
+    }
 
+    return NaN; // If no condition matches
+  }
+
+  // Initialize the Graph on Page Load
+  document.addEventListener("DOMContentLoaded", function () {
+    updateGraph();  // Render graph on load
+  });
+
+  // Add Annotation by Clicking on the Graph
+  graphContainer.addEventListener('click', function(event){
+    if (annotationMode) {
+      // Access the SVG element within the Plotly graph
+      const svg = graphContainer.querySelector('svg');
+      if (!svg) {
+        displayError("Unable to retrieve graph layout.");
+        return;
+      }
+
+      // Get the bounding rectangle of the SVG (plot area)
+      const rect = svg.getBoundingClientRect();
+      const xPixel = event.clientX;
+      const yPixel = event.clientY;
+      
+      const layout = graphContainer._fullLayout;
+      if (!layout || !layout.xaxis || !layout.yaxis) {
+        displayError("Unable to retrieve graph layout.");
+        return;
+      }
+
+      // Retrieve the axis ranges
+      const xRange = layout.xaxis.range;
+      const yRange = layout.yaxis.range;
+
+      // Calculate data coordinates based on pixel positions
+      const plotWidth = rect.width;
+      const plotHeight = rect.height;
+      const plotLeft = rect.left;
+      const plotTop = rect.top;
+
+      // Compute the data coordinates
+      const xData = xRange[0] + ((xPixel - plotLeft) / plotWidth) * (xRange[1] - xRange[0]);
+      const yData = yRange[1] - ((yPixel - plotTop) / plotHeight) * (yRange[1] - yRange[0]); // y axis is inverted
+
+      // Prompt user for note text
+      const noteText = prompt("Enter note text:");
+      if (noteText && noteText.trim() !== "") {
+        // Create a new annotation
+        const newAnnotation = {
+          x: xData,
+          y: yData,
+          xref: 'x',
+          yref: 'y',
+          text: noteText.trim(),
+          showarrow: true,
+          arrowhead: 7,
+          ax: 0,
+          ay: -40,
+          font: {color: 'black'}
+        };
+        
+        // Add to annotations array
+        annotations.push(newAnnotation);
+        
+        // Update Plotly annotations
+        Plotly.relayout(graphContainer, { annotations: annotations });
+        
+        // Exit annotation mode
+        annotationMode = false;
+        addAnnotationModeBtn.classList.remove('active');
+        addAnnotationModeBtn.textContent = 'Click to Add Annotation';
+        hideInfo();
+      } else {
+        // User canceled or entered empty text
+        displayError("Annotation text cannot be empty.");
+      }
+    }
+  });
+
+  // Resizable Graph Handling
+  // Observe resize events on the graph container
+  const resizeObserver = new ResizeObserver(entries => {
+    for (let entry of entries) {
+      Plotly.Plots.resize(graphContainer);
+    }
+  });
+
+  resizeObserver.observe(graphContainer);
 </script>
 
 </body>
