@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JavaScript Tests</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.10.0/jasmine.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.10.0/jasmine.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.10.0/jasmine-html.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.10.0/boot.min.js"></script>
+</head>
+<body></body>
+    <script>
+        // Include your JavaScript code here or in a separate file
+        // For example, you can include the code from index.html
+    </script>
+    <script>
+        // Define your tests here
+        describe("Graph Update Functionality", function() {
+            it("should update the graph with the correct formula", function() {
+                // Set up the necessary DOM elements and initial values
+                document.body.innerHTML = `
+                    <select id="functionSelector">
+                        <option value="linear">Linear</option>
+                        <option value="quadratic">Quadratic</option>
+                    </select>
+                    <input id="xValueInput" value="1">
+                    <input id="aInput" value="1">
+                    <input id="bInput" value="1">
+                    <input id="cInput" value="1">
+                    <input id="hInput" value="0">
+                    <input id="kInput" value="0">
+                    <input type="checkbox" id="reflectCheckbox">
+                    <div id="formulaDisplay"></div>
+                    <div id="graph"></div>
+                `;
+
+                // Mock the functions object
+                const functions = {
+                    linear: {
+                        name: "Linear",
+                        formula: (a, h, k, reflect, b, c) => `y = ${a}x + ${k}`,
+                        base: (x) => x
+                    },
+                    quadratic: {
+                        name: "Quadratic",
+                        formula: (a, h, k, reflect, b, c) => `y = ${a}(x - ${h})^2 + ${k}`,
+                        base: (x) => x * x
+                    }
+                };
+
+                // Mock MathJax
+                window.MathJax = {
+                    typesetPromise: () => Promise.resolve()
+                };
+
+                // Call the updateGraph function
+                updateGraph();
+
+                // Check if the formula display is updated correctly
+                const formulaDisplay = document.getElementById('formulaDisplay');
+                expect(formulaDisplay.innerHTML).toContain("y = 1x + 0");
+            });
+
+            // Add more tests as needed
+        });
+    </script>
+</body>
+</html>
